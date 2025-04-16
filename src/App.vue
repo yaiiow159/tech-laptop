@@ -17,7 +17,7 @@ import { useFavorites } from './store/favorites';
 import { useCompare } from './store/compare';
 
 const isLoading = ref(true);
-const currentPage = ref('home'); // 'home', 'checkout', 'deals', 'support', 'about', or 'favorites'
+const currentPage = ref('home');
 const cart = useCart();
 const favorites = useFavorites();
 const compare = useCompare();
@@ -27,19 +27,15 @@ onMounted(() => {
     isLoading.value = false;
   }, 1000);
   
-  // Load data from localStorage
   cart.loadCart();
   favorites.loadFavorites();
   compare.loadCompare();
   
-  // Check URL hash for routing
   checkRouteFromHash();
   
-  // Listen for hash changes
   window.addEventListener('hashchange', checkRouteFromHash);
 });
 
-// Function to check route from URL hash
 const checkRouteFromHash = () => {
   const hash = window.location.hash;
   
@@ -213,7 +209,6 @@ main {
   background-color: var(--primary-color);
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
   .section {
     padding: 2rem 0;

@@ -23,10 +23,8 @@ export const useCart = () => {
       });
     }
     
-    // Show cart notification or open cart
     state.isCartOpen = true;
     
-    // Save cart to localStorage
     saveCart();
   };
   
@@ -93,7 +91,6 @@ export const useCart = () => {
     }
   };
   
-  // Computed properties for cart calculations
   const cartCount = computed(() => {
     return state.items.reduce((total, item) => {
       return total + (parseInt(item.quantity) || 0);
@@ -113,7 +110,7 @@ export const useCart = () => {
   });
   
   const cartTax = computed(() => {
-    return cartSubtotal.value * 0.1; // Assuming 10% tax
+    return cartSubtotal.value * 0.1;
   });
   
   const cartShipping = computed(() => {
@@ -125,11 +122,9 @@ export const useCart = () => {
   });
   
   return {
-    // State
     items: computed(() => state.items),
     isCartOpen: computed(() => state.isCartOpen),
     
-    // Methods
     addToCart,
     removeFromCart,
     updateQuantity,
@@ -139,7 +134,6 @@ export const useCart = () => {
     openCart,
     loadCart,
     
-    // Computed
     cartCount,
     cartTotal,
     cartSubtotal,

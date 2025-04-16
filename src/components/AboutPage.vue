@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 
-// Team members data
 const teamMembers = [
   {
     name: 'Sarah Johnson',
@@ -53,7 +52,7 @@ const milestones = [
   {
     year: 2023,
     title: 'Sustainability Initiative',
-    description: 'Launched our eco-friendly packaging and laptop recycling program to reduce environmental impact.'
+    description: 'Launched our eco-friendly packaging and recycling program, committing to reducing our environmental footprint.'
   },
   {
     year: 2025,
@@ -62,7 +61,6 @@ const milestones = [
   }
 ];
 
-// Testimonials
 const testimonials = [
   {
     name: 'James Wilson',
@@ -84,25 +82,20 @@ const testimonials = [
   }
 ];
 
-// Active testimonial
 const activeTestimonial = ref(0);
 
-// Change testimonial
 const changeTestimonial = (index) => {
   activeTestimonial.value = index;
 };
 
-// Next testimonial
 const nextTestimonial = () => {
   activeTestimonial.value = (activeTestimonial.value + 1) % testimonials.length;
 };
 
-// Previous testimonial
 const prevTestimonial = () => {
   activeTestimonial.value = (activeTestimonial.value - 1 + testimonials.length) % testimonials.length;
 };
 
-// Auto-rotate testimonials
 setInterval(() => {
   nextTestimonial();
 }, 8000);

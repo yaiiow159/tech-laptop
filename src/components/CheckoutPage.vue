@@ -6,7 +6,6 @@ const cart = useCart();
 const currentStep = ref(1);
 const totalSteps = 3;
 
-// Ensure items are valid and have required properties
 const validCartItems = computed(() => {
   if (!cart.items.value || !Array.isArray(cart.items.value)) {
     return [];
@@ -18,7 +17,6 @@ onMounted(() => {
   cart.loadCart();
 });
 
-// Form data
 const shippingInfo = ref({
   firstName: '',
   lastName: '',
@@ -57,7 +55,6 @@ const promoApplied = ref(false);
 const promoDiscount = ref(0);
 const promoError = ref('');
 
-// Card type detection
 const cardType = computed(() => {
   const number = paymentInfo.value.cardNumber.replace(/\s+/g, '');
   
@@ -69,41 +66,31 @@ const cardType = computed(() => {
   return 'unknown';
 });
 
-// Format credit card number as user types
 watch(() => paymentInfo.value.cardNumber, (newVal) => {
   if (!newVal) return;
   
-  // Remove all non-digits
   let value = newVal.replace(/\D/g, '');
   
-  // Format based on card type
   if (cardType.value === 'amex') {
-    // Format: XXXX XXXXXX XXXXX
     value = value.replace(/(\d{4})(\d{6})(\d{5})/, '$1 $2 $3');
   } else {
-    // Format: XXXX XXXX XXXX XXXX
     value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
   }
   
-  // Update only if different to avoid cursor jumping
   if (value !== newVal) {
     paymentInfo.value.cardNumber = value;
   }
 });
 
-// Format expiry date as user types
 watch(() => paymentInfo.value.expiryDate, (newVal) => {
   if (!newVal) return;
   
-  // Remove all non-digits
   let value = newVal.replace(/\D/g, '');
   
-  // Format as MM/YY
   if (value.length > 2) {
     value = value.substring(0, 2) + '/' + value.substring(2, 4);
   }
   
-  // Update only if different to avoid cursor jumping
   if (value !== newVal) {
     paymentInfo.value.expiryDate = value;
   }
@@ -171,44 +158,39 @@ const prevStep = () => {
 };
 
 const applyPromoCode = () => {
-  // Reset previous promo
   promoApplied.value = false;
   promoDiscount.value = 0;
   promoError.value = '';
   
-  // Check for valid promo codes
   const code = promoCode.value.trim().toUpperCase();
   
   if (code === 'WELCOME10') {
     promoApplied.value = true;
-    promoDiscount.value = cart.cartSubtotal.value * 0.10; // 10% discount
+    promoDiscount.value = cart.cartSubtotal.value * 0.10; 
   } else if (code === 'SAVE20') {
     promoApplied.value = true;
-    promoDiscount.value = cart.cartSubtotal.value * 0.20; // 20% discount
+    promoDiscount.value = cart.cartSubtotal.value * 0.20; 
   } else if (code === 'FREESHIP') {
     promoApplied.value = true;
-    promoDiscount.value = cart.cartShipping.value; // Free shipping
+    promoDiscount.value = cart.cartShipping.value; 
   } else {
     promoError.value = 'Invalid promo code';
   }
 };
 
 const placeOrder = () => {
-  // In a real application, this would send the order to a backend
   alert('Thank you for your order! Order #' + Math.floor(Math.random() * 10000));
   cart.clearCart();
   window.location.href = '/';
 };
 
 const formatPrice = (price) => {
-  // Handle undefined, null or NaN values
   if (price === undefined || price === null || isNaN(price)) {
     return '$0.00';
   }
   return `$${Number(parseFloat(price)).toFixed(2)}`;
 };
 
-// Computed properties for order summary
 const subtotal = computed(() => {
   return formatPrice(cart.cartSubtotal.value);
 });
@@ -258,7 +240,6 @@ const total = computed(() => {
       
       <div class="checkout-content">
         <div class="checkout-form">
-          <!-- Step 1: Shipping Information -->
           <div v-if="currentStep === 1" class="checkout-step">
             <h2 class="step-title">Shipping Information</h2>
             
@@ -360,7 +341,6 @@ const total = computed(() => {
             </div>
           </div>
           
-          <!-- Step 2: Billing Information -->
           <div v-if="currentStep === 2" class="checkout-step">
             <h2 class="step-title">Billing Information</h2>
             
@@ -452,7 +432,6 @@ const total = computed(() => {
             </template>
           </div>
           
-          <!-- Step 3: Payment Information -->
           <div v-if="currentStep === 3" class="checkout-step">
             <h2 class="step-title">Payment Information</h2>
             

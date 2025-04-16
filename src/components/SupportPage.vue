@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 
-// FAQ categories
 const categories = [
   { id: 'general', name: 'General Questions' },
   { id: 'orders', name: 'Orders & Shipping' },
@@ -10,10 +9,8 @@ const categories = [
   { id: 'warranty', name: 'Warranty Information' }
 ];
 
-// Active category
 const activeCategory = ref('general');
 
-// FAQ data
 const faqs = {
   general: [
     {
@@ -107,7 +104,6 @@ const faqs = {
   ]
 };
 
-// Toggle FAQ item
 const toggleFaq = (index) => {
   const faqItems = document.querySelectorAll(`.faq-item[data-category="${activeCategory.value}"]`);
   faqItems.forEach((item, i) => {
@@ -119,12 +115,10 @@ const toggleFaq = (index) => {
   });
 };
 
-// Set active category
 const setCategory = (categoryId) => {
   activeCategory.value = categoryId;
 };
 
-// Contact form data
 const contactForm = ref({
   name: '',
   email: '',
@@ -134,12 +128,9 @@ const contactForm = ref({
   submitted: false
 });
 
-// Submit contact form
 const submitContactForm = () => {
-  // In a real application, this would send the form data to a backend
   contactForm.value.submitted = true;
   
-  // Reset form after 5 seconds
   setTimeout(() => {
     contactForm.value = {
       name: '',
