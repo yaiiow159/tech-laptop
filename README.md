@@ -1,4 +1,4 @@
-# Laptop Store
+# Tech Laptop
 
 A modern e-commerce platform for laptop sales built with Vue.js. This responsive web application offers a complete shopping experience with product comparison, favorites, and checkout functionality.
 
