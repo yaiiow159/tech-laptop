@@ -1,0 +1,433 @@
+<script setup>
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useCart } from '../store/cart';
+
+const cart = useCart();
+const isClosing = ref(false);
+
+// Computed property to ensure items are valid and have required properties
+const validCartItems = computed(() => {
+  if (!cart.items.value || !Array.isArray(cart.items.value)) {
+    return [];
+  }
+  return cart.items.value.filter(item => item && typeof item === 'object' && item.id);
+});
+
+// Computed property for empty cart state
+const isCartEmpty = computed(() => {
+  return validCartItems.value.length === 0;
+});
+
+// Enhanced close cart method with animation
+const closeCart = () => {
+  isClosing.value = true;
+  setTimeout(() => {
+    cart.closeCart();
+    isClosing.value = false;
+  }, 10);
+};
+
+const handleKeyDown = (event) => {
+  if (event.key === 'Escape' && cart.isCartOpen.value) {
+    closeCart();
+  }
+};
+
+onMounted(() => {
+  cart.loadCart();
+  document.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeyDown);
+});
+
+watch(() => window.location.hash, () => {
+  if (cart.isCartOpen.value) {
+    closeCart();
+  }
+});
+
+const formatPrice = (price) => {
+  // Handle undefined, null or NaN values
+  if (price === undefined || price === null || isNaN(price)) {
+    return '$0.00';
+  }
+  return `$${Number(parseFloat(price)).toFixed(2)}`;
+};
+
+const subtotal = computed(() => {
+  return formatPrice(cart.cartSubtotal.value);
+});
+
+const tax = computed(() => {
+  return formatPrice(cart.cartTax.value);
+});
+
+const shipping = computed(() => {
+  return cart.cartShipping.value === 0 ? 'Free' : formatPrice(cart.cartShipping.value);
+});
+
+const total = computed(() => {
+  return formatPrice(cart.cartGrandTotal.value);
+});
+</script>
+
+<template>
+  <!-- Overlay with improved click handling -->
+  <div 
+    v-if="cart.isCartOpen.value" 
+    class="cart-drawer-overlay" 
+    @click="closeCart"
+    @touchstart="closeCart"
+  ></div>
+  
+  <!-- Cart drawer with animation classes -->
+  <div 
+    class="cart-drawer" 
+    :class="{ 
+      'open': cart.isCartOpen.value, 
+      'closing': isClosing 
+    }"
+  >
+    <div class="cart-header">
+      <h3 class="cart-title">Your Cart ({{ cart.cartCount }})</h3>
+      <button 
+        class="cart-close" 
+        @click="closeCart"
+        aria-label="Close cart"
+      >×</button>
+    </div>
+    
+    <template v-if="isCartEmpty">
+      <div class="cart-empty">
+        <div class="cart-empty-icon">🛒</div>
+        <p>Your cart is empty</p>
+        <button class="btn btn-primary" @click="closeCart">Continue Shopping</button>
+      </div>
+    </template>
+    
+    <template v-else>
+      <div class="cart-content">
+        <div class="cart-items">
+          <template v-for="(item, index) in validCartItems" :key="`cart-item-${item.id || index}`">
+            <div class="cart-item">
+              <div class="cart-item-image">
+                <img :src="item.image || ''" :alt="item.name || 'Product'">
+              </div>
+              <div class="cart-item-details">
+                <h4 class="cart-item-name">{{ item.name || 'Product' }}</h4>
+                <p class="cart-item-price">{{ formatPrice(item.discountPrice || item.price) }}</p>
+              </div>
+              <div class="cart-item-quantity">
+                <button 
+                  class="quantity-btn minus" 
+                  @click="cart.updateQuantity(item.id, (parseInt(item.quantity) || 1) - 1)"
+                  :disabled="(parseInt(item.quantity) || 1) <= 1"
+                >-</button>
+                <span class="quantity-value">{{ parseInt(item.quantity) || 1 }}</span>
+                <button 
+                  class="quantity-btn plus" 
+                  @click="cart.updateQuantity(item.id, (parseInt(item.quantity) || 1) + 1)"
+                >+</button>
+              </div>
+              <button 
+                class="cart-item-remove" 
+                @click="cart.removeFromCart(item.id)"
+                aria-label="Remove item"
+              >
+                <span class="remove-icon">×</span>
+              </button>
+            </div>
+          </template>
+        </div>
+        
+        <div class="cart-summary">
+          <div class="cart-summary-row">
+            <span>Subtotal:</span>
+            <span>{{ subtotal }}</span>
+          </div>
+          <div class="cart-summary-row">
+            <span>Tax (10%):</span>
+            <span>{{ tax }}</span>
+          </div>
+          <div class="cart-summary-row">
+            <span>Shipping:</span>
+            <span>{{ shipping }}</span>
+          </div>
+          <div class="cart-summary-row total">
+            <span>Total:</span>
+            <span>{{ total }}</span>
+          </div>
+        </div>
+        
+        <div class="cart-actions">
+          <a 
+            href="#checkout" 
+            class="btn btn-primary btn-block" 
+            @click="closeCart"
+          >
+            Proceed to Checkout
+          </a>
+          <button 
+            class="btn btn-outline btn-block" 
+            @click="closeCart"
+          >
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    </template>
+  </div>
+</template>
+
+<style scoped>
+.cart-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  animation: fadeIn 0.3s;
+  cursor: pointer;
+}
+
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 100%;
+  max-width: 400px;
+  height: 100%;
+  background-color: white;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: right 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-drawer.open {
+  right: 0;
+}
+
+.cart-drawer.closing {
+  right: -400px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.cart-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.cart-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--gray-color);
+  transition: color var(--transition-speed);
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.cart-close:hover {
+  color: var(--dark-color);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.cart-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.cart-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.3;
+}
+
+.cart-empty p {
+  margin-bottom: 1.5rem;
+  color: var(--gray-color);
+}
+
+.cart-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cart-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.cart-item-image {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-right: 1rem;
+}
+
+.cart-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-item-details {
+  flex: 1;
+}
+
+.cart-item-name {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.cart-item-price {
+  color: var(--primary-color);
+  font-weight: 600;
+  margin: 0;
+}
+
+.cart-item-quantity {
+  display: flex;
+  align-items: center;
+  margin: 0 1rem;
+}
+
+.quantity-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.quantity-btn:hover:not(:disabled) {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.quantity-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantity-value {
+  margin: 0 0.5rem;
+  min-width: 20px;
+  text-align: center;
+}
+
+.cart-item-remove {
+  background: none;
+  border: none;
+  color: var(--gray-color);
+  cursor: pointer;
+  transition: color var(--transition-speed);
+  padding: 0.5rem;
+}
+
+.cart-item-remove:hover {
+  color: var(--error-color);
+}
+
+.remove-icon {
+  font-size: 1.25rem;
+}
+
+.cart-summary {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9;
+}
+
+.cart-summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.cart-summary-row.total {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(0, 0, 0, 0.1);
+}
+
+.cart-actions {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-outline:hover {
+  background-color: rgba(58, 134, 255, 0.1);
+}
+
+@media (max-width: 480px) {
+  .cart-drawer {
+    max-width: 100%;
+  }
+}
+</style>
