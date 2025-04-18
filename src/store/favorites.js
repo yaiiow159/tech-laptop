@@ -1,12 +1,10 @@
 import { reactive, computed } from 'vue';
 
-// Create reactive state for favorites
 const state = reactive({
   items: [],
 });
 
 export const useFavorites = () => {
-  // Add item to favorites
   const addToFavorites = (product) => {
     if (!product || !product.id) {
       console.error('Invalid product:', product);
@@ -20,12 +18,10 @@ export const useFavorites = () => {
         ...product
       });
       
-      // Save favorites to localStorage
       saveFavorites();
     }
   };
   
-  // Remove item from favorites
   const removeFromFavorites = (productId) => {
     if (!productId) return;
     
@@ -36,7 +32,6 @@ export const useFavorites = () => {
     }
   };
   
-  // Toggle favorites status
   const toggleFavorite = (product) => {
     if (!product || !product.id) return;
     
@@ -55,7 +50,6 @@ export const useFavorites = () => {
     return state.items.some(item => item.id === productId);
   };
   
-  // Save favorites to localStorage
   const saveFavorites = () => {
     try {
       localStorage.setItem('favorites', JSON.stringify(state.items));
@@ -64,7 +58,6 @@ export const useFavorites = () => {
     }
   };
   
-  // Load favorites from localStorage
   const loadFavorites = () => {
     try {
       const savedFavorites = localStorage.getItem('favorites');
@@ -79,23 +72,19 @@ export const useFavorites = () => {
     }
   };
   
-  // Computed properties
   const favoritesCount = computed(() => {
     return state.items.length;
   });
   
   return {
-    // State
     items: computed(() => state.items),
     
-    // Methods
     addToFavorites,
     removeFromFavorites,
     toggleFavorite,
     isInFavorites,
     loadFavorites,
     
-    // Computed
     favoritesCount
   };
 };

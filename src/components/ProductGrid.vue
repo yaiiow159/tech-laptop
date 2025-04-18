@@ -8,7 +8,6 @@ onMounted(() => {
   cart.loadCart();
 });
 
-// Define products with all required properties including specs
 const products = ref([
   {
     id: 1,
@@ -195,7 +194,6 @@ const filteredProducts = computed(() => {
       result.sort((a, b) => b.id - a.id);
       break;
     default:
-      // 'featured' - no specific sorting
       break;
   }
   
@@ -213,7 +211,6 @@ const setSort = (sortId) => {
 const addToCart = (product) => {
   cart.addToCart(product);
   
-  // Show notification
   const notification = document.createElement('div');
   notification.className = 'add-to-cart-notification';
   notification.innerHTML = `
@@ -701,7 +698,6 @@ const addToCart = (product) => {
   margin-bottom: 1.5rem;
 }
 
-/* Add to cart notification */
 .add-to-cart-notification {
   position: fixed;
   top: 20px;
@@ -741,7 +737,6 @@ const addToCart = (product) => {
   flex: 1;
 }
 
-/* Icons */
 .icon-search::before {
   content: '🔍';
 }
